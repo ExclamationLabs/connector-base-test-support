@@ -1,0 +1,28 @@
+plugins {
+    id 'java'
+    id 'maven'
+}
+
+repositories {
+   jcenter()
+}
+
+sourceCompatibility = '1.8'
+targetCompatibility = '1.8'
+group = 'com.exclamationlabs.connid'
+
+def build_version = System.getenv('BUILD_NUMBER') == null ? 'SNAPSHOT' : System.getenv('BUILD_NUMBER')
+project.version="${software_version}-${build_version}"
+
+dependencies {
+    compile 'net.tirasa.connid:connector-test-common:1.5.0.0'
+    compile 'org.apache.httpcomponents:httpclient:4.5.10'
+    compile 'org.mockito:mockito-core:3.1.0'
+}
+
+task generatePom {
+    doLast {
+        pom().writeTo("build/libs/${project.name}-${project.version}.pom")
+    }
+}
+build.dependsOn(generatePom)
