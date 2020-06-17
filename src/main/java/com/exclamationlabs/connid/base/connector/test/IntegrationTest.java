@@ -41,6 +41,11 @@ public interface IntegrationTest {
             success = true;
         } catch (ConfigurationException ce) {
             LOG.info("Connector Integration test could not be run: " + ce.getMessage());
+            if (isContinuousIntegrationBuild()) {
+                throw new IllegalArgumentException(
+                        "Configuration invalid or secret linkage missing for " +
+                                "connector integration test running on CI server", ce);
+            }
         }
         Assume.assumeTrue(success);
     }
@@ -52,7 +57,16 @@ public interface IntegrationTest {
             success = true;
         } catch (ConfigurationException ce) {
             LOG.info("Isolated Integration test could not be run: " + ce.getMessage());
+            if (isContinuousIntegrationBuild()) {
+                throw new IllegalArgumentException(
+                        "Configuration invalid or secret linkage missing for " +
+                            "isolated integration test running on CI server", ce);
+            }
         }
         Assume.assumeTrue(success);
+    }
+
+    default boolean isContinuousIntegrationBuild() {
+        return System.getenv("BUILD_NUMBER") != null;
     }
 }
