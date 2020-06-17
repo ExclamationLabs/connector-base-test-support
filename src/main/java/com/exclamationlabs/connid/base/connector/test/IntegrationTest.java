@@ -16,11 +16,32 @@
 
 package com.exclamationlabs.connid.base.connector.test;
 
+
+import org.identityconnectors.common.logging.Log;
+import org.identityconnectors.framework.common.exceptions.ConfigurationException;
+import org.identityconnectors.framework.spi.Configuration;
+import org.identityconnectors.framework.spi.Connector;
+import org.junit.Assume;
+
 /**
  * Interface for tests that require integration to an external data
  * provider for authorization or Identity Access Management.
  */
 public interface IntegrationTest {
 
+    Log LOG = Log.getLog(IntegrationTest.class);
+
     String getConfigurationName();
+
+    default void setup(Connector connector, Configuration configuration) {
+        boolean success = false;
+        try {
+            configuration.validate();
+            connector.init(configuration);
+            success = true;
+        } catch (ConfigurationException ce) {
+            LOG.info("Integration test could not be run: " + ce.getMessage());
+        }
+        Assume.assumeTrue(success);
+    }
 }
