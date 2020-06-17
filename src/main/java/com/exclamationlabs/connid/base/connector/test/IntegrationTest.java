@@ -40,7 +40,18 @@ public interface IntegrationTest {
             connector.init(configuration);
             success = true;
         } catch (ConfigurationException ce) {
-            LOG.info("Integration test could not be run: " + ce.getMessage());
+            LOG.info("Connector Integration test could not be run: " + ce.getMessage());
+        }
+        Assume.assumeTrue(success);
+    }
+
+    default void setup(Configuration configuration) {
+        boolean success = false;
+        try {
+            configuration.validate();
+            success = true;
+        } catch (ConfigurationException ce) {
+            LOG.info("Isolated Integration test could not be run: " + ce.getMessage());
         }
         Assume.assumeTrue(success);
     }
