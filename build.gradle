@@ -1,5 +1,5 @@
 plugins {
-    id 'java'
+    id 'java-library'
     id 'maven'
 }
 
@@ -15,10 +15,10 @@ def build_version = System.getenv('BUILD_NUMBER') == null ? 'SNAPSHOT' : System.
 project.version="${software_version}-${build_version}"
 
 dependencies {
-    compile 'net.tirasa.connid:connector-test-common:1.5.0.0'
-    compile 'org.apache.httpcomponents:httpclient:4.5.10'
-    compile 'org.mockito:mockito-core:3.1.0'
-    compile 'junit:junit:4.12'
+    api 'net.tirasa.connid:connector-test-common:1.5.0.0'
+    api 'org.apache.httpcomponents:httpclient:4.5.10'
+    api 'org.mockito:mockito-core:3.1.0'
+    api 'junit:junit:4.12'
 }
 
 task generatePom {
