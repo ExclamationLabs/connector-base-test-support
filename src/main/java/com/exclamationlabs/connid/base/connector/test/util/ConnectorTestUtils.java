@@ -21,9 +21,10 @@ import org.identityconnectors.framework.common.objects.ResultsHandler;
 
 import java.util.List;
 
-/***
+/**
  * Utility methods to help simplify development of Connector unit/integration tests
  */
+@SuppressWarnings("unused") // used by downstream projects
 public class ConnectorTestUtils {
 
     private ConnectorTestUtils() {}

@@ -16,12 +16,15 @@
 
 package com.exclamationlabs.connid.base.connector.test.util;
 
+import com.exclamationlabs.connid.base.connector.test.IntegrationTest;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.StatusLine;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpRequestBase;
+import org.identityconnectors.common.logging.Log;
+import org.junit.Assert;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 
@@ -35,7 +38,10 @@ import static org.mockito.ArgumentMatchers.any;
  * for testing connectors that use RESTful drivers which
  * subclass BaseRestDriver.
  */
+@SuppressWarnings("unused") // used by downstream projects
 public abstract class ConnectorMockRestTest {
+
+    private static final Log LOG = Log.getLog(IntegrationTest.class);
 
     @Mock
     protected HttpClient stubClient;
@@ -49,6 +55,7 @@ public abstract class ConnectorMockRestTest {
     @Mock
     protected StatusLine stubStatusLine;
 
+    @SuppressWarnings("unused") // used by downstream projects
     protected void prepareMockResponse(String responseData) {
         try {
             Mockito.when(stubResponseEntity.getContent()).thenReturn(new ByteArrayInputStream(responseData.getBytes()));
@@ -57,21 +64,25 @@ public abstract class ConnectorMockRestTest {
             Mockito.when(stubStatusLine.getStatusCode()).thenReturn(HttpStatus.SC_OK);
             Mockito.when(stubClient.execute(any(HttpRequestBase.class))).thenReturn(stubResponse);
         } catch(IOException ioe) {
-            throw new RuntimeException("IO Exception occurred during Mock rest execution " +
+            handleFailure("IO Exception occurred during Mock rest execution " +
                     "(populated response)", ioe);
         }
-
     }
 
+    @SuppressWarnings("unused") // used by downstream projects
     protected void prepareMockResponseEmpty() {
         try {
             Mockito.when(stubResponse.getStatusLine()).thenReturn(stubStatusLine);
             Mockito.when(stubStatusLine.getStatusCode()).thenReturn(HttpStatus.SC_OK);
             Mockito.when(stubClient.execute(any(HttpRequestBase.class))).thenReturn(stubResponse);
         } catch(IOException ioe) {
-            throw new RuntimeException(
-                    "IO Exception occurred during Mock rest execution (empty response", ioe);
+            handleFailure("IO Exception occurred during Mock rest execution " +
+                    "(empty response", ioe);
         }
+    }
 
+    private static void handleFailure(String message, IOException ioe) {
+        LOG.error(message, ioe);
+        Assert.fail(message);
     }
 }
