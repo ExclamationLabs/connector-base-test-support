@@ -41,7 +41,7 @@ import static org.mockito.ArgumentMatchers.any;
 @SuppressWarnings("unused") // used by downstream projects
 public abstract class ConnectorMockRestTest {
 
-    private static final Log LOG = Log.getLog(IntegrationTest.class);
+    private static final Log LOG = Log.getLog(ConnectorMockRestTest.class);
 
     @Mock
     protected HttpClient stubClient;
