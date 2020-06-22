@@ -31,10 +31,8 @@ public abstract class IntegrationTest {
 
     Log LOG = Log.getLog(IntegrationTest.class);
 
-    @SuppressWarnings("unused") // used by downstream projects
     public abstract String getConfigurationName();
 
-    @SuppressWarnings("unused") // used by downstream projects
     protected final void setup(Connector connector, Configuration configuration) {
         boolean success = false;
         try {
@@ -52,7 +50,6 @@ public abstract class IntegrationTest {
         Assume.assumeTrue(success);
     }
 
-    @SuppressWarnings("unused") // used by downstream projects
     protected final void setup(Configuration configuration) {
         boolean success = false;
         try {
@@ -69,7 +66,7 @@ public abstract class IntegrationTest {
         Assume.assumeTrue(success);
     }
 
-    public final boolean isContinuousIntegrationBuild() {
+    public boolean isContinuousIntegrationBuild() {
         return System.getenv("BUILD_NUMBER") != null;
     }
 }

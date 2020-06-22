@@ -16,7 +16,6 @@
 
 package com.exclamationlabs.connid.base.connector.test.util;
 
-import com.exclamationlabs.connid.base.connector.test.IntegrationTest;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
@@ -25,8 +24,10 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.identityconnectors.common.logging.Log;
 import org.junit.Assert;
+import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -38,7 +39,7 @@ import static org.mockito.ArgumentMatchers.any;
  * for testing connectors that use RESTful drivers which
  * subclass BaseRestDriver.
  */
-@SuppressWarnings("unused") // used by downstream projects
+@RunWith(MockitoJUnitRunner.class)
 public abstract class ConnectorMockRestTest {
 
     private static final Log LOG = Log.getLog(ConnectorMockRestTest.class);
@@ -55,7 +56,6 @@ public abstract class ConnectorMockRestTest {
     @Mock
     protected StatusLine stubStatusLine;
 
-    @SuppressWarnings("unused") // used by downstream projects
     protected void prepareMockResponse(String responseData) {
         try {
             Mockito.when(stubResponseEntity.getContent()).thenReturn(new ByteArrayInputStream(responseData.getBytes()));
@@ -69,7 +69,6 @@ public abstract class ConnectorMockRestTest {
         }
     }
 
-    @SuppressWarnings("unused") // used by downstream projects
     protected void prepareMockResponseEmpty() {
         try {
             Mockito.when(stubResponse.getStatusLine()).thenReturn(stubStatusLine);
