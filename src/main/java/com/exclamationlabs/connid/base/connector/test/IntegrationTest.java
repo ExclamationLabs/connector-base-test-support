@@ -27,13 +27,13 @@ import org.junit.Assume;
  * Interface for tests that require integration to an external data
  * provider for authorization or Identity Access Management.
  */
-public interface IntegrationTest {
+public abstract class IntegrationTest {
 
     Log LOG = Log.getLog(IntegrationTest.class);
 
-    String getConfigurationName();
+    public abstract String getConfigurationName();
 
-    default void setup(Connector connector, Configuration configuration) {
+    protected final void setup(Connector connector, Configuration configuration) {
         boolean success = false;
         try {
             configuration.validate();
@@ -50,7 +50,7 @@ public interface IntegrationTest {
         Assume.assumeTrue(success);
     }
 
-    default void setup(Configuration configuration) {
+    protected final void setup(Configuration configuration) {
         boolean success = false;
         try {
             configuration.validate();
@@ -66,7 +66,7 @@ public interface IntegrationTest {
         Assume.assumeTrue(success);
     }
 
-    default boolean isContinuousIntegrationBuild() {
+    public boolean isContinuousIntegrationBuild() {
         return System.getenv("BUILD_NUMBER") != null;
     }
 }

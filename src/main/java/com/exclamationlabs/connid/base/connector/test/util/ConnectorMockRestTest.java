@@ -22,8 +22,12 @@ import org.apache.http.HttpStatus;
 import org.apache.http.StatusLine;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpRequestBase;
+import org.identityconnectors.common.logging.Log;
+import org.junit.Assert;
+import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -35,7 +39,10 @@ import static org.mockito.ArgumentMatchers.any;
  * for testing connectors that use RESTful drivers which
  * subclass BaseRestDriver.
  */
+@RunWith(MockitoJUnitRunner.class)
 public abstract class ConnectorMockRestTest {
+
+    private static final Log LOG = Log.getLog(ConnectorMockRestTest.class);
 
     @Mock
     protected HttpClient stubClient;
@@ -57,10 +64,9 @@ public abstract class ConnectorMockRestTest {
             Mockito.when(stubStatusLine.getStatusCode()).thenReturn(HttpStatus.SC_OK);
             Mockito.when(stubClient.execute(any(HttpRequestBase.class))).thenReturn(stubResponse);
         } catch(IOException ioe) {
-            throw new RuntimeException("IO Exception occurred during Mock rest execution " +
+            handleFailure("IO Exception occurred during Mock rest execution " +
                     "(populated response)", ioe);
         }
-
     }
 
     protected void prepareMockResponseEmpty() {
@@ -69,9 +75,13 @@ public abstract class ConnectorMockRestTest {
             Mockito.when(stubStatusLine.getStatusCode()).thenReturn(HttpStatus.SC_OK);
             Mockito.when(stubClient.execute(any(HttpRequestBase.class))).thenReturn(stubResponse);
         } catch(IOException ioe) {
-            throw new RuntimeException(
-                    "IO Exception occurred during Mock rest execution (empty response", ioe);
+            handleFailure("IO Exception occurred during Mock rest execution " +
+                    "(empty response", ioe);
         }
+    }
 
+    private static void handleFailure(String message, IOException ioe) {
+        LOG.error(message, ioe);
+        Assert.fail(message);
     }
 }
