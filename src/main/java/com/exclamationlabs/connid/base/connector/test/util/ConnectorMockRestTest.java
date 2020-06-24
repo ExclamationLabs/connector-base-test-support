@@ -56,6 +56,28 @@ public abstract class ConnectorMockRestTest {
     @Mock
     protected StatusLine stubStatusLine;
 
+    protected void prepareClientException(Throwable exception) {
+        try {
+            Mockito.when(stubClient.execute(any(HttpRequestBase.class))).thenThrow(exception);
+        } catch(IOException ioe) {
+            handleFailure("IO Exception occurred during Mock rest execution " +
+                    "(populated response)", ioe);
+        }
+    }
+
+    protected void prepareClientFaultResponse(String jsonErrorResponseData, int httpStatus) {
+        try {
+            Mockito.when(stubResponseEntity.getContent()).thenReturn(new ByteArrayInputStream(jsonErrorResponseData.getBytes()));
+            Mockito.when(stubResponse.getEntity()).thenReturn(stubResponseEntity);
+            Mockito.when(stubResponse.getStatusLine()).thenReturn(stubStatusLine);
+            Mockito.when(stubStatusLine.getStatusCode()).thenReturn(httpStatus);
+            Mockito.when(stubClient.execute(any(HttpRequestBase.class))).thenReturn(stubResponse);
+        } catch(IOException ioe) {
+            handleFailure("IO Exception occurred during Mock rest execution " +
+                    "(populated response)", ioe);
+        }
+    }
+
     protected void prepareMockResponse(String responseData) {
         try {
             Mockito.when(stubResponseEntity.getContent()).thenReturn(new ByteArrayInputStream(responseData.getBytes()));
