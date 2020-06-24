@@ -2,8 +2,12 @@ package com.exclamationlabs.connid.base.connector.test.util;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
 import org.apache.http.StatusLine;
 import org.apache.http.client.methods.HttpGet;
+import org.identityconnectors.framework.common.exceptions.ConnectorException;
+import org.identityconnectors.framework.common.exceptions.ConnectorSecurityException;
+import org.identityconnectors.framework.common.exceptions.InvalidAttributeValueException;
 import org.identityconnectors.framework.common.objects.*;
 import org.identityconnectors.framework.common.objects.filter.FilterTranslator;
 import org.identityconnectors.framework.spi.Configuration;
@@ -18,17 +22,18 @@ import java.util.ArrayList;
 public class ConnectorMockRestTestUnitTest extends ConnectorMockRestTest {
 
     protected TestConnector connector;
+    protected ResultsHandler resultsHandler;
 
     @Before
     public void setup() {
         connector = new TestConnector();
+        resultsHandler = ConnectorTestUtils.buildResultsHandler(new ArrayList<>(),
+                new ArrayList<>());
     }
 
     @Test
     public void test() {
         prepareMockResponse("{someResponse:0}");
-        ResultsHandler resultsHandler = ConnectorTestUtils.buildResultsHandler(new ArrayList<>(),
-                new ArrayList<>());
         connector.executeQuery(ObjectClass.ACCOUNT, "query", resultsHandler,
                 new OperationOptionsBuilder().build());
     }
@@ -36,8 +41,6 @@ public class ConnectorMockRestTestUnitTest extends ConnectorMockRestTest {
     @Test
     public void testEmptyResponse() {
         prepareMockResponse("");
-        ResultsHandler resultsHandler = ConnectorTestUtils.buildResultsHandler(new ArrayList<>(),
-                new ArrayList<>());
         connector.executeQuery(ObjectClass.ACCOUNT, "query", resultsHandler,
                 new OperationOptionsBuilder().build());
     }
@@ -45,8 +48,28 @@ public class ConnectorMockRestTestUnitTest extends ConnectorMockRestTest {
     @Test
     public void testEmpty() {
         prepareMockResponseEmpty();
-        ResultsHandler resultsHandler = ConnectorTestUtils.buildResultsHandler(new ArrayList<>(),
-                new ArrayList<>());
+        connector.executeQuery(ObjectClass.ACCOUNT, "query", resultsHandler,
+                new OperationOptionsBuilder().build());
+    }
+
+    @Test(expected=ConnectorException.class)
+    public void testException() {
+        prepareClientException(new ConnectorException("failed"));
+        connector.executeQuery(ObjectClass.ACCOUNT, "query", resultsHandler,
+                new OperationOptionsBuilder().build());
+
+    }
+
+    @Test(expected=InvalidAttributeValueException.class)
+    public void testErrorResponseBody() {
+        prepareClientFaultResponse("{oops:99}", HttpStatus.SC_BAD_REQUEST);
+        connector.executeQuery(ObjectClass.ACCOUNT, "query", resultsHandler,
+                new OperationOptionsBuilder().build());
+    }
+
+    @Test(expected=ConnectorSecurityException.class)
+    public void testErrorResponseBodyDifferentCode() {
+        prepareClientFaultResponse("{oops:888}", HttpStatus.SC_FORBIDDEN);
         connector.executeQuery(ObjectClass.ACCOUNT, "query", resultsHandler,
                 new OperationOptionsBuilder().build());
     }
@@ -79,10 +102,18 @@ public class ConnectorMockRestTestUnitTest extends ConnectorMockRestTest {
                 HttpResponse response = stubClient.execute(new HttpGet());
                 HttpEntity entity = response.getEntity();
                 StatusLine statusLine = response.getStatusLine();
+                String responseBody = "dummy";
                 if (entity != null) {
                     entity.getContent();
                 }
-                statusLine.getStatusCode();
+                if (statusLine.getStatusCode() != HttpStatus.SC_OK) {
+                    if (statusLine.getStatusCode() == HttpStatus.SC_BAD_REQUEST) {
+                        throw new InvalidAttributeValueException(responseBody);
+                    } else {
+                        throw new ConnectorSecurityException(responseBody);
+                    }
+
+                }
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
