@@ -16,6 +16,7 @@
 
 package com.exclamationlabs.connid.base.connector.test.util;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
@@ -25,12 +26,16 @@ import org.apache.http.client.methods.HttpRequestBase;
 import org.identityconnectors.common.logging.Log;
 import org.junit.Assert;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 
@@ -61,7 +66,7 @@ public abstract class ConnectorMockRestTest {
             Mockito.when(stubClient.execute(any(HttpRequestBase.class))).thenThrow(exception);
         } catch(IOException ioe) {
             handleFailure("IO Exception occurred during Mock rest execution " +
-                    "(populated response)", ioe);
+                    "(populated client exception)", ioe);
         }
     }
 
@@ -74,36 +79,84 @@ public abstract class ConnectorMockRestTest {
             Mockito.when(stubClient.execute(any(HttpRequestBase.class))).thenReturn(stubResponse);
         } catch(IOException ioe) {
             handleFailure("IO Exception occurred during Mock rest execution " +
-                    "(populated response)", ioe);
+                    "(populated fault response)", ioe);
         }
     }
 
-    protected void prepareMockResponse(String responseData) {
-        try {
-            Mockito.when(stubResponseEntity.getContent()).thenReturn(new ByteArrayInputStream(responseData.getBytes()));
-            Mockito.when(stubResponse.getEntity()).thenReturn(stubResponseEntity);
-            Mockito.when(stubResponse.getStatusLine()).thenReturn(stubStatusLine);
-            Mockito.when(stubStatusLine.getStatusCode()).thenReturn(HttpStatus.SC_OK);
-            Mockito.when(stubClient.execute(any(HttpRequestBase.class))).thenReturn(stubResponse);
-        } catch(IOException ioe) {
-            handleFailure("IO Exception occurred during Mock rest execution " +
-                    "(populated response)", ioe);
-        }
-    }
-
+    /**
+     * Deprecated - use prepareMockResponse() (no parameter method)
+     */
+    @Deprecated
     protected void prepareMockResponseEmpty() {
+        prepareMockResponse();
+    }
+
+    protected void prepareMockResponse() {
         try {
             Mockito.when(stubResponse.getStatusLine()).thenReturn(stubStatusLine);
             Mockito.when(stubStatusLine.getStatusCode()).thenReturn(HttpStatus.SC_OK);
             Mockito.when(stubClient.execute(any(HttpRequestBase.class))).thenReturn(stubResponse);
         } catch(IOException ioe) {
-            handleFailure("IO Exception occurred during Mock rest execution " +
-                    "(empty response", ioe);
+            handleFailure("IOException occurred during Mock rest execution for empty response", ioe);
         }
     }
 
-    private static void handleFailure(String message, IOException ioe) {
-        LOG.error(message, ioe);
+    protected void prepareMockResponse(String... responseData) {
+        try {
+            if (responseData == null || responseData.length == 0)  {
+                Throwable error = new IllegalAccessException(
+                        "Invalid Null or empty mock response supplied");
+                handleFailure(error.getMessage(), error);
+                return;
+            }
+
+            if (responseData.length == 1) {
+                Mockito.when(this.stubResponseEntity.getContent()).thenReturn(
+                        new ByteArrayInputStream(responseData[0] == null ? "".getBytes() : responseData[0].getBytes()));
+                Mockito.when(this.stubResponse.getEntity()).thenReturn(this.stubResponseEntity);
+                Mockito.when(this.stubResponse.getStatusLine()).thenReturn(this.stubStatusLine);
+                Mockito.when(this.stubStatusLine.getStatusCode()).thenReturn(200);
+                Mockito.when(this.stubClient.execute( ArgumentMatchers.any(HttpRequestBase.class))).thenReturn(this.stubResponse);
+            }
+            else {
+                String[] dataAfterFirst = ArrayUtils.remove(responseData, 0);
+                List<ByteArrayInputStream> streamsAfterFirst = new ArrayList<>();
+                for (String current : dataAfterFirst) {
+                    streamsAfterFirst.add(new ByteArrayInputStream(current == null ? "".getBytes() : current.getBytes()));
+                }
+                ByteArrayInputStream[] streamsAfterFirstArray = new ByteArrayInputStream[dataAfterFirst.length];
+                streamsAfterFirstArray = streamsAfterFirst.toArray(streamsAfterFirstArray);
+
+                HttpEntity[] entities = new HttpEntity[dataAfterFirst.length];
+                Arrays.fill(entities, this.stubResponseEntity);
+
+                StatusLine[] statusLines = new StatusLine[dataAfterFirst.length];
+                Arrays.fill(statusLines, this.stubStatusLine);
+
+                Integer[] statusCodes = new Integer[dataAfterFirst.length];
+                Arrays.fill(statusCodes, HttpStatus.SC_OK);
+
+                HttpResponse[] httpResponses = new HttpResponse[dataAfterFirst.length];
+                Arrays.fill(httpResponses, stubResponse);
+
+                Mockito.when(this.stubResponseEntity.getContent()).thenReturn(
+                        new ByteArrayInputStream(responseData[0] == null ? "".getBytes() : responseData[0].getBytes()),
+                        streamsAfterFirstArray);
+                Mockito.when(this.stubResponse.getEntity()).thenReturn(this.stubResponseEntity, entities);
+                Mockito.when(this.stubResponse.getStatusLine()).thenReturn(this.stubStatusLine, statusLines);
+                Mockito.when(this.stubStatusLine.getStatusCode()).thenReturn(HttpStatus.SC_OK, statusCodes);
+                Mockito.when(this.stubClient.execute(
+                        ArgumentMatchers.any(HttpRequestBase.class))).thenReturn(this.stubResponse, httpResponses);
+            }
+
+        } catch (IOException ioe) {
+            handleFailure("IOException occurred during Mock rest execution for data response", ioe);
+        }
+
+    }
+
+    private static void handleFailure(String message, Throwable throwable) {
+        LOG.error(message, throwable);
         Assert.fail(message);
     }
 }

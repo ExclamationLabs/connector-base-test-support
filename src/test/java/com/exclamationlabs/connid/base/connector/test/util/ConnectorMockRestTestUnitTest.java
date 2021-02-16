@@ -38,6 +38,42 @@ public class ConnectorMockRestTestUnitTest extends ConnectorMockRestTest {
                 new OperationOptionsBuilder().build());
     }
 
+    @Test(expected = AssertionError.class)
+    public void testInvalidNullMock() {
+        prepareMockResponse((String[])null);
+        connector.executeQuery(ObjectClass.ACCOUNT, "query", resultsHandler,
+                new OperationOptionsBuilder().build());
+    }
+
+    @Test(expected = AssertionError.class)
+    public void testInvalidEmptyStringListMock() {
+        prepareMockResponse(new String[0]);
+        connector.executeQuery(ObjectClass.ACCOUNT, "query", resultsHandler,
+                new OperationOptionsBuilder().build());
+    }
+
+    @Test
+    public void testInvalidEmptyStringListMockFirstNull() {
+        prepareMockResponse(new String[] {null});
+        connector.executeQuery(ObjectClass.ACCOUNT, "query", resultsHandler,
+                new OperationOptionsBuilder().build());
+    }
+
+    @Test
+    public void testInvalidEmptyStringListMockMixedNull() {
+        prepareMockResponse(null, "hi", null);
+        connector.executeQuery(ObjectClass.ACCOUNT, "query", resultsHandler,
+                new OperationOptionsBuilder().build());
+    }
+
+    @Test
+    public void testMultiple() {
+        prepareMockResponse("{someResponse:0}", "{anotherResponse:1}",
+                "{yetAnotherResponse:2}");
+        connector.executeQuery(ObjectClass.ACCOUNT, "query", resultsHandler,
+                new OperationOptionsBuilder().build());
+    }
+
     @Test
     public void testEmptyResponse() {
         prepareMockResponse("");
@@ -47,7 +83,7 @@ public class ConnectorMockRestTestUnitTest extends ConnectorMockRestTest {
 
     @Test
     public void testEmpty() {
-        prepareMockResponseEmpty();
+        prepareMockResponse();
         connector.executeQuery(ObjectClass.ACCOUNT, "query", resultsHandler,
                 new OperationOptionsBuilder().build());
     }
