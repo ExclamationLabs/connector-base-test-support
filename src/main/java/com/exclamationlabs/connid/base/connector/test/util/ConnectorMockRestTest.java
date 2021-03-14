@@ -106,7 +106,6 @@ public abstract class ConnectorMockRestTest {
             return;
         }
 
-        Mockito.lenient().when(this.stubResponse.getAllHeaders()).thenReturn(stubHeaders);
         stubHeaders = new Header[responseHeaders.size()];
         int headerCtr = 0;
         for (Map.Entry<String,String> entry : responseHeaders.entrySet()) {
@@ -128,6 +127,7 @@ public abstract class ConnectorMockRestTest {
             };
         }
 
+        Mockito.lenient().when(this.stubResponse.getAllHeaders()).thenReturn(stubHeaders);
         prepareMockResponse(responseData);
     }
 
