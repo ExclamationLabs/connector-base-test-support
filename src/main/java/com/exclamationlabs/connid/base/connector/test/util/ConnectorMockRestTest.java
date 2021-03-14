@@ -17,10 +17,7 @@
 package com.exclamationlabs.connid.base.connector.test.util;
 
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
-import org.apache.http.StatusLine;
+import org.apache.http.*;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.identityconnectors.common.logging.Log;
@@ -36,6 +33,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import static org.mockito.ArgumentMatchers.any;
 
@@ -60,6 +58,8 @@ public abstract class ConnectorMockRestTest {
 
     @Mock
     protected StatusLine stubStatusLine;
+
+    protected Header[] stubHeaders;
 
     protected void prepareClientException(Throwable exception) {
         try {
@@ -101,12 +101,39 @@ public abstract class ConnectorMockRestTest {
         }
     }
 
+    protected void prepareMockResponse(Map<String, String> responseHeaders, String... responseData) {
+        if (checkResponseData(responseData)) {
+            return;
+        }
+
+        Mockito.lenient().when(this.stubResponse.getAllHeaders()).thenReturn(stubHeaders);
+        stubHeaders = new Header[responseHeaders.size()];
+        int headerCtr = 0;
+        for (Map.Entry<String,String> entry : responseHeaders.entrySet()) {
+            stubHeaders[headerCtr++] = new Header() {
+                @Override
+                public HeaderElement[] getElements() throws ParseException {
+                    return new HeaderElement[0];
+                }
+
+                @Override
+                public String getName() {
+                    return entry.getKey();
+                }
+
+                @Override
+                public String getValue() {
+                    return entry.getValue();
+                }
+            };
+        }
+
+        prepareMockResponse(responseData);
+    }
+
     protected void prepareMockResponse(String... responseData) {
         try {
-            if (responseData == null || responseData.length == 0)  {
-                Throwable error = new IllegalAccessException(
-                        "Invalid Null or empty mock response supplied");
-                handleFailure(error.getMessage(), error);
+            if (checkResponseData(responseData)) {
                 return;
             }
 
@@ -153,6 +180,16 @@ public abstract class ConnectorMockRestTest {
             handleFailure("IOException occurred during Mock rest execution for data response", ioe);
         }
 
+    }
+
+    private boolean checkResponseData(String... responseData) {
+        if (responseData == null || responseData.length == 0)  {
+            Throwable error = new IllegalAccessException(
+                    "Invalid Null or empty mock response supplied");
+            handleFailure(error.getMessage(), error);
+            return true;
+        }
+        return false;
     }
 
     private static void handleFailure(String message, Throwable throwable) {

@@ -18,6 +18,8 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class ConnectorMockRestTestUnitTest extends ConnectorMockRestTest {
 
@@ -34,6 +36,16 @@ public class ConnectorMockRestTestUnitTest extends ConnectorMockRestTest {
     @Test
     public void test() {
         prepareMockResponse("{someResponse:0}");
+        connector.executeQuery(ObjectClass.ACCOUNT, "query", resultsHandler,
+                new OperationOptionsBuilder().build());
+    }
+
+    @Test
+    public void testWithHeaders() {
+        Map<String,String> headers = new HashMap<>();
+        headers.put("bert", "ernie");
+        headers.put("elmo", "grover");
+        prepareMockResponse(headers, "{someResponse:0}");
         connector.executeQuery(ObjectClass.ACCOUNT, "query", resultsHandler,
                 new OperationOptionsBuilder().build());
     }
@@ -61,7 +73,7 @@ public class ConnectorMockRestTestUnitTest extends ConnectorMockRestTest {
 
     @Test
     public void testInvalidEmptyStringListMockMixedNull() {
-        prepareMockResponse(null, "hi", null);
+        prepareMockResponse((String) null, "hi", null);
         connector.executeQuery(ObjectClass.ACCOUNT, "query", resultsHandler,
                 new OperationOptionsBuilder().build());
     }
