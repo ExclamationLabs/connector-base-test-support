@@ -36,7 +36,6 @@ public abstract class IntegrationTest {
     protected final void setup(Connector connector, Configuration configuration) {
         boolean success = false;
         try {
-            configuration.validate();
             connector.init(configuration);
             success = true;
         } catch (ConfigurationException ce) {
