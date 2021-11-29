@@ -40,6 +40,9 @@ public abstract class IntegrationTest {
             success = true;
         } catch (ConfigurationException ce) {
             LOG.info("Connector Integration test could not be run: " + ce.getMessage());
+            if (ce.getCause() != null) {
+                LOG.info("Validation error message: " + ce.getCause().getMessage());
+            }
             if (isContinuousIntegrationBuild()) {
                 throw new IllegalArgumentException(
                         "Configuration invalid or secret linkage missing for " +
