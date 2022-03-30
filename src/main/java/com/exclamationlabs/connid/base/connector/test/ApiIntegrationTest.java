@@ -110,12 +110,13 @@ public abstract class ApiIntegrationTest<T extends Configuration, U extends Conn
     }
 
     protected void setup() {
+        T configurationData = getConfiguration();
         connectorFacade = ConnectorFacadeFactory.getInstance().newInstance(
-                apiConfig(getConfiguration()));
+                apiConfig(configurationData));
         results = new ArrayList<>();
         LOG.ok("Setup facade and new results list for {0}", this.getClass().getSimpleName());
 
-        validateConfiguration(getConfiguration());
+        validateConfiguration(configurationData);
     }
 
     protected APIConfiguration apiConfig(T configurationObject) {
