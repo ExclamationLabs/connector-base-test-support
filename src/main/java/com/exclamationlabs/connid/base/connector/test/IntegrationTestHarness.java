@@ -1,5 +1,5 @@
 /*
-    Copyright 2020 Exclamation Labs
+    Copyright 2022 Exclamation Labs
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -16,44 +16,34 @@
 
 package com.exclamationlabs.connid.base.connector.test;
 
-
 import org.identityconnectors.common.logging.Log;
 import org.identityconnectors.framework.common.exceptions.ConfigurationException;
 import org.identityconnectors.framework.spi.Configuration;
-import org.identityconnectors.framework.spi.Connector;
 import org.junit.Assume;
 
-/**
- * Interface for tests that require integration to an external data
- * provider for authorization or Identity Access Management.
- */
-public abstract class IntegrationTest implements IntegrationTestHarness {
+public interface IntegrationTestHarness {
 
-    Log LOG = Log.getLog(IntegrationTest.class);
+    Log LOG = Log.getLog(IntegrationTestHarness.class);
 
-    public abstract String getConfigurationName();
+    default boolean isContinuousIntegrationBuild() {
+        return System.getenv("BUILD_NUMBER") != null;
+    }
 
-    protected final void setup(Connector connector, Configuration configuration) {
+    default void validateConfiguration(Configuration configuration) {
         boolean success = false;
         try {
-            connector.init(configuration);
+            configuration.validate();
             success = true;
         } catch (ConfigurationException ce) {
-            LOG.info("Connector Integration test could not be run: " + ce.getMessage());
-            if (ce.getCause() != null) {
-                LOG.info("Validation error message: " + ce.getCause().getMessage());
-            }
+            LOG.info("Isolated Integration test could not be run: " + ce.getMessage());
             if (isContinuousIntegrationBuild()) {
                 throw new IllegalArgumentException(
                         "Configuration invalid or secret linkage missing for " +
-                                "connector integration test running on CI server", ce);
+                                "isolated integration test running on CI server", ce);
             }
         }
         Assume.assumeTrue(success);
-    }
-
-    protected final void setup(Configuration configuration) {
-        validateConfiguration(configuration);
+        LOG.ok("Configuration validated for {0}", this.getClass().getSimpleName());
     }
 
 }

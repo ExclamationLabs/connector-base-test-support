@@ -36,7 +36,8 @@ import java.util.List;
  * Abstract class for ConnId API facade-based tests that require
  * integration to an external data provider for authorization or Identity Access Management.
  */
-public abstract class ApiIntegrationTest<T extends Configuration, U extends Connector> {
+public abstract class ApiIntegrationTest<T extends Configuration, U extends Connector>
+        implements IntegrationTestHarness {
 
     Log LOG = Log.getLog(ApiIntegrationTest.class);
 
@@ -113,6 +114,8 @@ public abstract class ApiIntegrationTest<T extends Configuration, U extends Conn
                 apiConfig(getConfiguration()));
         results = new ArrayList<>();
         LOG.ok("Setup facade and new results list for {0}", this.getClass().getSimpleName());
+
+        validateConfiguration(getConfiguration());
     }
 
     protected APIConfiguration apiConfig(T configurationObject) {
