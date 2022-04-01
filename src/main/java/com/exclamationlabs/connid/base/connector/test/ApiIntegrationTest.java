@@ -109,6 +109,14 @@ public abstract class ApiIntegrationTest<T extends Configuration, U extends Conn
         return false;
     }
 
+    /**
+     * If subclass API test supports need to test custom filtering, override this method and return true.
+     * @return whether or not custom filtering should be used by ConnId facade for integration.
+     */
+    protected boolean useFilteredResults() {
+        return false;
+    }
+
     protected void setup() {
         T configurationData = getConfiguration();
         connectorFacade = ConnectorFacadeFactory.getInstance().newInstance(
@@ -124,6 +132,7 @@ public abstract class ApiIntegrationTest<T extends Configuration, U extends Conn
         APIConfiguration configuration = TestHelpers.createTestConfiguration(getConnectorClass(), configurationObject);
         ((APIConfigurationImpl) configuration).setConnectorPoolingSupported(usePooling());
         configuration.getResultsHandlerConfiguration().setFilteredResultsHandlerInValidationMode(true);
+        configuration.getResultsHandlerConfiguration().setEnableFilteredResultsHandler(useFilteredResults());
         return configuration;
     }
 
