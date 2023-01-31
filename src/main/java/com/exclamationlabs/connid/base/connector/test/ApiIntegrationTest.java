@@ -16,6 +16,8 @@
 
 package com.exclamationlabs.connid.base.connector.test;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.identityconnectors.common.logging.Log;
 import org.identityconnectors.framework.api.APIConfiguration;
 import org.identityconnectors.framework.api.ConnectorFacade;
@@ -28,112 +30,115 @@ import org.identityconnectors.framework.spi.Connector;
 import org.identityconnectors.framework.spi.SearchResultsHandler;
 import org.identityconnectors.test.common.TestHelpers;
 
-import java.util.ArrayList;
-import java.util.List;
-
-
 /**
- * Abstract class for ConnId API facade-based tests that require
- * integration to an external data provider for authorization or Identity Access Management.
+ * Abstract class for ConnId API facade-based tests that require integration to an external data
+ * provider for authorization or Identity Access Management.
  */
 public abstract class ApiIntegrationTest<T extends Configuration, U extends Connector>
-        implements IntegrationTestHarness {
+    implements IntegrationTestHarness {
 
-    Log LOG = Log.getLog(ApiIntegrationTest.class);
+  Log LOG = Log.getLog(ApiIntegrationTest.class);
 
-    /**
-     * Return the configuration object applicable to this connector test
-     * @return Concrete Configuration class that implements org.identityconnectors.framework.spi.Configuration.
-     */
-    protected abstract T getConfiguration();
+  /**
+   * Return the configuration object applicable to this connector test
+   *
+   * @return Concrete Configuration class that implements
+   *     org.identityconnectors.framework.spi.Configuration.
+   */
+  protected abstract T getConfiguration();
 
-    /**
-     * Return the class of the connector under test.
-     * @return Concrete Class that implements org.identityconnectors.framework.spi.Connector.
-     */
-    protected abstract Class<U> getConnectorClass();
+  /**
+   * Return the class of the connector under test.
+   *
+   * @return Concrete Class that implements org.identityconnectors.framework.spi.Connector.
+   */
+  protected abstract Class<U> getConnectorClass();
 
-    /**
-     * Subclasses should invoke:
-     * ConfigurationReader.setupTestConfiguration(configurationObject);
-     *
-     * This needs to implemented by the subclass because this test framework
-     * does not have the base connector ConfigurationReader implementation code.
-     *
-     * @param configurationObject configuration object applicable to this connector test
-     */
-    protected abstract void readConfiguration(T configurationObject);
+  /**
+   * Subclasses should invoke: ConfigurationReader.setupTestConfiguration(configurationObject);
+   *
+   * <p>This needs to implemented by the subclass because this test framework does not have the base
+   * connector ConfigurationReader implementation code.
+   *
+   * @param configurationObject configuration object applicable to this connector test
+   */
+  protected abstract void readConfiguration(T configurationObject);
 
-    protected ConnectorFacade connectorFacade;
+  protected ConnectorFacade connectorFacade;
 
-    protected static List<ConnectorObject> results;
+  protected static List<ConnectorObject> results;
 
-    protected SearchResultsHandler handler = new SearchResultsHandler() {
+  protected SearchResultsHandler handler =
+      new SearchResultsHandler() {
 
         @Override
         public boolean handle(ConnectorObject connectorObject) {
-            results.add(connectorObject);
-            LOG.ok("{0} added connectorObject {1} to results.  Results size now {2}",
-                    this.getClass().getSimpleName(),
-                    connectorObject,
-                    results.size());
-            return true;
+          results.add(connectorObject);
+          LOG.ok(
+              "{0} added connectorObject {1} to results.  Results size now {2}",
+              this.getClass().getSimpleName(), connectorObject, results.size());
+          return true;
         }
 
         @Override
         public void handleResult(SearchResult result) {
-            LOG.ok("{0} handling {1}", this.getClass().getSimpleName(),
-                    result.getRemainingPagedResults());
+          LOG.ok(
+              "{0} handling {1}",
+              this.getClass().getSimpleName(), result.getRemainingPagedResults());
         }
-    };
+      };
 
-    public ConnectorFacade getConnectorFacade() {
-        return connectorFacade;
-    }
+  public ConnectorFacade getConnectorFacade() {
+    return connectorFacade;
+  }
 
-    public static List<ConnectorObject> getResults() {
-        return results;
-    }
+  public static List<ConnectorObject> getResults() {
+    return results;
+  }
 
-    public SearchResultsHandler getHandler() {
-        return handler;
-    }
+  public SearchResultsHandler getHandler() {
+    return handler;
+  }
 
-    /**
-     * Default behavior is to disable connection pooling for API integration testing.
-     * If for some reason connection pooling is desired, this method can be overloaded and
-     * return true.
-     * @return whether or not connection pooling should be used by ConnId facade for integration.
-     */
-    protected boolean usePooling() {
-        return false;
-    }
+  /**
+   * Default behavior is to disable connection pooling for API integration testing. If for some
+   * reason connection pooling is desired, this method can be overloaded and return true.
+   *
+   * @return whether or not connection pooling should be used by ConnId facade for integration.
+   */
+  protected boolean usePooling() {
+    return false;
+  }
 
-    /**
-     * If subclass API test supports need to test custom filtering, override this method and return true.
-     * @return whether or not custom filtering should be used by ConnId facade for integration.
-     */
-    protected boolean useFilteredResults() {
-        return false;
-    }
+  /**
+   * If subclass API test supports need to test custom filtering, override this method and return
+   * true.
+   *
+   * @return whether or not custom filtering should be used by ConnId facade for integration.
+   */
+  protected boolean useFilteredResults() {
+    return false;
+  }
 
-    protected void setup() {
-        T configurationData = getConfiguration();
-        connectorFacade = ConnectorFacadeFactory.getInstance().newInstance(
-                apiConfig(configurationData));
-        results = new ArrayList<>();
-        LOG.ok("Setup facade and new results list for {0}", this.getClass().getSimpleName());
+  protected void setup() {
+    T configurationData = getConfiguration();
+    connectorFacade =
+        ConnectorFacadeFactory.getInstance().newInstance(apiConfig(configurationData));
+    results = new ArrayList<>();
+    LOG.ok("Setup facade and new results list for {0}", this.getClass().getSimpleName());
 
-        validateConfiguration(configurationData);
-    }
+    validateConfiguration(configurationData);
+  }
 
-    protected APIConfiguration apiConfig(T configurationObject) {
-        readConfiguration(configurationObject);
-        APIConfiguration configuration = TestHelpers.createTestConfiguration(getConnectorClass(), configurationObject);
-        ((APIConfigurationImpl) configuration).setConnectorPoolingSupported(usePooling());
-        configuration.getResultsHandlerConfiguration().setFilteredResultsHandlerInValidationMode(true);
-        configuration.getResultsHandlerConfiguration().setEnableFilteredResultsHandler(useFilteredResults());
-        return configuration;
-    }
-
+  protected APIConfiguration apiConfig(T configurationObject) {
+    readConfiguration(configurationObject);
+    APIConfiguration configuration =
+        TestHelpers.createTestConfiguration(getConnectorClass(), configurationObject);
+    ((APIConfigurationImpl) configuration).setConnectorPoolingSupported(usePooling());
+    configuration.getResultsHandlerConfiguration().setFilteredResultsHandlerInValidationMode(true);
+    configuration
+        .getResultsHandlerConfiguration()
+        .setEnableFilteredResultsHandler(useFilteredResults());
+    return configuration;
+  }
 }

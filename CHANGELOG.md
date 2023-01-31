@@ -7,4 +7,6 @@ This project is a small test harness required by base connector framework and co
 built from it.
 
 # Change Log
++ **3.0.1** - Integrate GAR build into Jenkins FIN-9902 (01/31/2023)
++ **3.0** - Migrate to GAR, update dependencies and switch to Junit 5 FIN-9902 (01/31/2023)
 + **2.1.1** - Split versioning of test-support from connector-base; Migrate to Google Archive Repository FIN-9902 (11/28/2022)

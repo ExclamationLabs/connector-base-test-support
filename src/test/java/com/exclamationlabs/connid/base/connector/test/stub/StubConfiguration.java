@@ -20,17 +20,14 @@ import org.identityconnectors.framework.common.objects.ConnectorMessages;
 import org.identityconnectors.framework.spi.Configuration;
 
 public class StubConfiguration implements Configuration {
-    @Override
-    public void validate() {
-    }
+  @Override
+  public void validate() {}
 
-    @Override
-    public ConnectorMessages getConnectorMessages() {
-        return null;
-    }
+  @Override
+  public ConnectorMessages getConnectorMessages() {
+    return null;
+  }
 
-    @Override
-    public void setConnectorMessages(ConnectorMessages messages) {
-
-    }
+  @Override
+  public void setConnectorMessages(ConnectorMessages messages) {}
 }

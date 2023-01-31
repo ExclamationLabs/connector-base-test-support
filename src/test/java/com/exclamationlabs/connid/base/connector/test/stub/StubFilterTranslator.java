@@ -20,29 +20,28 @@ import org.identityconnectors.framework.common.objects.filter.*;
 
 public class StubFilterTranslator extends AbstractFilterTranslator<AttributeFilter> {
 
-    @Override
-    protected AttributeFilter createEqualsExpression(EqualsFilter filter, boolean not) {
-        if (filter == null || not) {
-            return null;
-        }
-        return filter;
+  @Override
+  protected AttributeFilter createEqualsExpression(EqualsFilter filter, boolean not) {
+    if (filter == null || not) {
+      return null;
     }
+    return filter;
+  }
 
-    @Override
-    protected AttributeFilter createContainsAllValuesExpression(ContainsAllValuesFilter filter, boolean not) {
-        if (filter == null || not) {
-            return null;
-        }
-        return filter;
+  @Override
+  protected AttributeFilter createContainsAllValuesExpression(
+      ContainsAllValuesFilter filter, boolean not) {
+    if (filter == null || not) {
+      return null;
     }
+    return filter;
+  }
 
-
-    @Override
-    protected AttributeFilter createContainsExpression(ContainsFilter filter, boolean not) {
-        if (filter == null || not) {
-            return null;
-        }
-        return filter;
+  @Override
+  protected AttributeFilter createContainsExpression(ContainsFilter filter, boolean not) {
+    if (filter == null || not) {
+      return null;
     }
-
+    return filter;
+  }
 }
