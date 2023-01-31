@@ -16,44 +16,44 @@
 
 package com.exclamationlabs.connid.base.connector.test;
 
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import org.identityconnectors.common.logging.Log;
 import org.identityconnectors.framework.common.exceptions.ConfigurationException;
 import org.identityconnectors.framework.spi.Configuration;
 import org.identityconnectors.framework.spi.Connector;
-import org.junit.Assume;
 
 /**
- * Interface for tests that require integration to an external data
- * provider for authorization or Identity Access Management.
+ * Interface for tests that require integration to an external data provider for authorization or
+ * Identity Access Management.
  */
 public abstract class IntegrationTest implements IntegrationTestHarness {
 
-    Log LOG = Log.getLog(IntegrationTest.class);
+  Log LOG = Log.getLog(IntegrationTest.class);
 
-    public abstract String getConfigurationName();
+  public abstract String getConfigurationName();
 
-    protected final void setup(Connector connector, Configuration configuration) {
-        boolean success = false;
-        try {
-            connector.init(configuration);
-            success = true;
-        } catch (ConfigurationException ce) {
-            LOG.info("Connector Integration test could not be run: " + ce.getMessage());
-            if (ce.getCause() != null) {
-                LOG.info("Validation error message: " + ce.getCause().getMessage());
-            }
-            if (isContinuousIntegrationBuild()) {
-                throw new IllegalArgumentException(
-                        "Configuration invalid or secret linkage missing for " +
-                                "connector integration test running on CI server", ce);
-            }
-        }
-        Assume.assumeTrue(success);
+  protected final void setup(Connector connector, Configuration configuration) {
+    boolean success = false;
+    try {
+      connector.init(configuration);
+      success = true;
+    } catch (ConfigurationException ce) {
+      LOG.info("Connector Integration test could not be run: " + ce.getMessage());
+      if (ce.getCause() != null) {
+        LOG.info("Validation error message: " + ce.getCause().getMessage());
+      }
+      if (isContinuousIntegrationBuild()) {
+        throw new IllegalArgumentException(
+            "Configuration invalid or secret linkage missing for "
+                + "connector integration test running on CI server",
+            ce);
+      }
     }
+    assumeTrue(success);
+  }
 
-    protected final void setup(Configuration configuration) {
-        validateConfiguration(configuration);
-    }
-
+  protected final void setup(Configuration configuration) {
+    validateConfiguration(configuration);
+  }
 }

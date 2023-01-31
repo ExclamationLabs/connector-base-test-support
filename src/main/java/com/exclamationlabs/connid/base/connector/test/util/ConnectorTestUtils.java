@@ -16,24 +16,20 @@
 
 package com.exclamationlabs.connid.base.connector.test.util;
 
+import java.util.List;
 import org.identityconnectors.framework.common.objects.ConnectorObject;
 import org.identityconnectors.framework.common.objects.ResultsHandler;
 
-import java.util.List;
-
-/**
- * Utility methods to help simplify development of Connector unit/integration tests
- */
+/** Utility methods to help simplify development of Connector unit/integration tests */
 public class ConnectorTestUtils {
 
-    private ConnectorTestUtils() {}
+  private ConnectorTestUtils() {}
 
-    public static ResultsHandler buildResultsHandler(List<String> idValues, List<String> nameValues) {
-        return (ConnectorObject connectorObject) -> {
-            idValues.add(connectorObject.getUid().getUidValue());
-            nameValues.add(connectorObject.getName().getNameValue());
-            return true;
-        };
-
-    }
+  public static ResultsHandler buildResultsHandler(List<String> idValues, List<String> nameValues) {
+    return (ConnectorObject connectorObject) -> {
+      idValues.add(connectorObject.getUid().getUidValue());
+      nameValues.add(connectorObject.getName().getNameValue());
+      return true;
+    };
+  }
 }

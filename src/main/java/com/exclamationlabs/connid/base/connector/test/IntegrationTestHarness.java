@@ -16,34 +16,35 @@
 
 package com.exclamationlabs.connid.base.connector.test;
 
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
+
 import org.identityconnectors.common.logging.Log;
 import org.identityconnectors.framework.common.exceptions.ConfigurationException;
 import org.identityconnectors.framework.spi.Configuration;
-import org.junit.Assume;
 
 public interface IntegrationTestHarness {
 
-    Log LOG = Log.getLog(IntegrationTestHarness.class);
+  Log LOG = Log.getLog(IntegrationTestHarness.class);
 
-    default boolean isContinuousIntegrationBuild() {
-        return System.getenv("BUILD_NUMBER") != null;
+  default boolean isContinuousIntegrationBuild() {
+    return System.getenv("BUILD_NUMBER") != null;
+  }
+
+  default void validateConfiguration(Configuration configuration) {
+    boolean success = false;
+    try {
+      configuration.validate();
+      success = true;
+    } catch (ConfigurationException ce) {
+      LOG.info("Isolated Integration test could not be run: " + ce.getMessage());
+      if (isContinuousIntegrationBuild()) {
+        throw new IllegalArgumentException(
+            "Configuration invalid or secret linkage missing for "
+                + "isolated integration test running on CI server",
+            ce);
+      }
     }
-
-    default void validateConfiguration(Configuration configuration) {
-        boolean success = false;
-        try {
-            configuration.validate();
-            success = true;
-        } catch (ConfigurationException ce) {
-            LOG.info("Isolated Integration test could not be run: " + ce.getMessage());
-            if (isContinuousIntegrationBuild()) {
-                throw new IllegalArgumentException(
-                        "Configuration invalid or secret linkage missing for " +
-                                "isolated integration test running on CI server", ce);
-            }
-        }
-        Assume.assumeTrue(success);
-        LOG.ok("Configuration validated for {0}", this.getClass().getSimpleName());
-    }
-
+    assumeTrue(success);
+    LOG.ok("Configuration validated for {0}", this.getClass().getSimpleName());
+  }
 }

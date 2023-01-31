@@ -16,108 +16,116 @@
 
 package com.exclamationlabs.connid.base.connector.test;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import com.exclamationlabs.connid.base.connector.test.stub.StubConfiguration;
 import com.exclamationlabs.connid.base.connector.test.stub.StubConnector;
+import java.util.HashSet;
+import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 import org.identityconnectors.framework.common.objects.*;
 import org.identityconnectors.framework.common.objects.filter.EqualsFilter;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import java.util.HashSet;
-import java.util.Set;
+public class ApiIntegrationTestUnitTest
+    extends ApiIntegrationTest<StubConfiguration, StubConnector> {
 
-import static org.junit.Assert.*;
+  private boolean configurationRead;
 
-@RunWith(MockitoJUnitRunner.class)
-public class ApiIntegrationTestUnitTest extends
-        ApiIntegrationTest<StubConfiguration, StubConnector> {
+  @BeforeEach
+  public void setup() {
+    super.setup();
+    configurationRead = true;
+  }
 
-    private boolean configurationRead;
+  @Override
+  protected StubConfiguration getConfiguration() {
+    return new StubConfiguration();
+  }
 
-    @Before
-    public void setup() {
-        super.setup();
-        configurationRead = true;
-    }
+  @Override
+  protected Class<StubConnector> getConnectorClass() {
+    return StubConnector.class;
+  }
 
-    @Override
-    protected StubConfiguration getConfiguration() {
-        return new StubConfiguration();
-    }
+  @Override
+  protected void readConfiguration(StubConfiguration configurationObject) {
+    configurationRead = true;
+  }
 
-    @Override
-    protected Class<StubConnector> getConnectorClass() {
-        return StubConnector.class;
-    }
+  @Test
+  public void configurationNotNull() {
+    assertNotNull(getConfiguration());
+  }
 
-    @Override
-    protected void readConfiguration(StubConfiguration configurationObject) {
-        configurationRead = true;
-    }
+  @Test
+  public void connectorClassValid() {
+    assertNotNull(getConnectorClass());
+  }
 
-    @Test
-    public void configurationNotNull() {
-        assertNotNull(getConfiguration());
-    }
+  @Test
+  public void configurationRead() {
+    assertTrue(configurationRead);
+  }
 
-    @Test
-    public void connectorClassValid() {
-        assertNotNull(getConnectorClass());
-    }
+  @Test
+  public void testMethod() {
+    connectorFacade.test();
+  }
 
-    @Test
-    public void configurationRead() {
-        assertTrue(configurationRead);
-    }
+  @Test
+  public void getAll() {
+    getConnectorFacade()
+        .search(ObjectClass.ACCOUNT, null, handler, new OperationOptionsBuilder().build());
+    assertEquals(2, results.size());
+  }
 
-    @Test
-    public void testMethod() {
-        connectorFacade.test();
-    }
+  @Test
+  public void getOne() {
+    Attribute idAttribute = new AttributeBuilder().setName(Uid.NAME).addValue("test").build();
+    getConnectorFacade()
+        .search(
+            ObjectClass.ACCOUNT,
+            new EqualsFilter(idAttribute),
+            handler,
+            new OperationOptionsBuilder().build());
+    assertEquals(1, results.size());
+    assertTrue(StringUtils.isNotBlank(results.get(0).getUid().getUidValue()));
+    assertTrue(StringUtils.isNotBlank(results.get(0).getUid().getName()));
+  }
 
-    @Test
-    public void getAll() {
-        getConnectorFacade().search( ObjectClass.ACCOUNT, null, handler, new OperationOptionsBuilder().build());
-        assertEquals(2, results.size());
-    }
+  @Test
+  public void create() {
+    Set<Attribute> attributes = new HashSet<>();
+    attributes.add(new AttributeBuilder().setName("testme").addValue("testvalue").build());
+    Uid newId =
+        connectorFacade.create(
+            ObjectClass.ACCOUNT, attributes, new OperationOptionsBuilder().build());
+    assertNotNull(newId);
+    assertNotNull(newId.getUidValue());
+  }
 
-    @Test
-    public void getOne() {
-        Attribute idAttribute = new AttributeBuilder().setName(Uid.NAME).addValue("test").build();
-        getConnectorFacade().search( ObjectClass.ACCOUNT, new EqualsFilter(idAttribute), handler, new OperationOptionsBuilder().build());
-        assertEquals(1, results.size());
-        assertTrue(StringUtils.isNotBlank(results.get(0).getUid().getUidValue()));
-        assertTrue(StringUtils.isNotBlank(results.get(0).getUid().getName()));
-    }
+  @Test
+  public void modify() {
+    Set<AttributeDelta> attributes = new HashSet<>();
+    attributes.add(
+        new AttributeDeltaBuilder().setName("dummy").addValueToReplace("dummy data").build());
 
-    @Test
-    public void create() {
-        Set<Attribute> attributes = new HashSet<>();
-        attributes.add(new AttributeBuilder().setName("testme").addValue("testvalue").build());
-        Uid newId = connectorFacade.create(ObjectClass.ACCOUNT, attributes, new OperationOptionsBuilder().build());
-        assertNotNull(newId);
-        assertNotNull(newId.getUidValue());
-    }
+    Set<AttributeDelta> response =
+        connectorFacade.updateDelta(
+            ObjectClass.ACCOUNT,
+            new Uid("dummy id"),
+            attributes,
+            new OperationOptionsBuilder().build());
 
-    @Test
-    public void modify() {
-        Set<AttributeDelta> attributes = new HashSet<>();
-        attributes.add(new AttributeDeltaBuilder().setName(
-                "dummy").addValueToReplace("dummy data").build());
+    assertNotNull(response);
+    assertTrue(response.isEmpty());
+  }
 
-        Set<AttributeDelta> response = connectorFacade.updateDelta(ObjectClass.ACCOUNT, new Uid("dummy id"),
-                attributes, new OperationOptionsBuilder().build());
-
-        assertNotNull(response);
-        assertTrue(response.isEmpty());
-    }
-
-    @Test
-    public void delete() {
-        connectorFacade.delete(ObjectClass.ACCOUNT, new Uid("dummy id"), new OperationOptionsBuilder().build());
-    }
-
+  @Test
+  public void delete() {
+    connectorFacade.delete(
+        ObjectClass.ACCOUNT, new Uid("dummy id"), new OperationOptionsBuilder().build());
+  }
 }

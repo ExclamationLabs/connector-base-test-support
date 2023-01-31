@@ -1,31 +1,43 @@
 plugins {
     id 'java-library'
     id 'maven-publish'
+    id 'com.google.cloud.artifactregistry.gradle-plugin' version '2.2.0'
+    id 'com.github.sherter.google-java-format' version '0.9'
 }
 
 repositories {
     mavenCentral()
 }
 
+googleJavaFormat {}
+
 sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
 group = 'com.exclamationlabs.connid'
 
-def build_version = System.getenv('BUILD_NUMBER') == null ? 'SNAPSHOT' : System.getenv('BUILD_NUMBER')
+def build_version = System.getenv('BUILD_NUMBER') == null ? System.currentTimeMillis() : System.getenv('BUILD_NUMBER')
 project.version="${software_version}-${build_version}"
 
 dependencies {
     api 'net.tirasa.connid:connector-test-common:1.5.0.0'
-    api 'org.apache.httpcomponents:httpclient:4.5.10'
-    api 'org.mockito:mockito-core:3.1.0'
-    api 'junit:junit:4.12'
-    api 'org.apache.commons:commons-lang3:3.8.1'
+    api 'org.apache.httpcomponents:httpclient:4.5.14'
+
+    api 'org.mockito:mockito-junit-jupiter:4.11.0'
+
+    api 'org.apache.commons:commons-lang3:3.12.0'
     api 'net.tirasa.connid:connector-framework-internal:1.5.0.0'
+
+    api 'org.junit.jupiter:junit-jupiter-engine:5.8.2'
 }
 
 task sourceJar(type: Jar) {
     from sourceSets.main.allJava
     archiveClassifier = 'source'
+}
+
+task javadocJar(type: Jar) {
+    from javadoc
+    archiveClassifier = 'javadoc'
 }
 
 task copyPom(type: Copy) {
@@ -39,6 +51,7 @@ publishing {
         connector_base(MavenPublication) {
             from components.java
             artifact sourceJar
+            artifact javadocJar
             pom {
                 name = "Connector Base: Test Support"
                 description = "Test Support Dependency for Base Connector Framework"
@@ -46,7 +59,7 @@ publishing {
                 licenses {
                     license {
                         name = "The Apache License, Version 2.0"
-                        url = "http://www.apache.org/licenses/LICENSE-2.0.txt"
+                        url = "https://www.apache.org/licenses/LICENSE-2.0.txt"
                     }
                 }
                 scm {
@@ -55,6 +68,16 @@ publishing {
             }
         }
     }
+
+    repositories {
+        maven {
+            url "artifactregistry://us-east1-maven.pkg.dev/provision-general-operations/provision-public/"
+        }
+    }
+}
+
+test {
+    useJUnitPlatform() {}
 }
 
 build.dependsOn(copyPom)
