@@ -32,4 +32,13 @@ public class ConnectorTestUtils {
       return true;
     };
   }
+
+  public static ResultsHandler buildResultsHandler(List<String> idValues, List<String> nameValues, List<ConnectorObject> results) {
+    return (ConnectorObject connectorObject) -> {
+      idValues.add(connectorObject.getUid().getUidValue());
+      nameValues.add(connectorObject.getName().getNameValue());
+      results.add(connectorObject);
+      return true;
+    };
+  }
 }
