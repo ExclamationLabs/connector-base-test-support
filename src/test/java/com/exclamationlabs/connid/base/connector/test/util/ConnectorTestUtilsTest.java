@@ -1,5 +1,6 @@
 package com.exclamationlabs.connid.base.connector.test.util;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
@@ -30,6 +31,19 @@ public class ConnectorTestUtilsTest {
         ObjectClass.ACCOUNT, "query", resultsHandler, new OperationOptionsBuilder().build());
     assertTrue(idValues.contains("someId"));
     assertTrue(nameValues.contains("someName"));
+  }
+  @Test
+  public void testResults() {
+    List<String> idValues = new ArrayList<>();
+    List<String> nameValues = new ArrayList<>();
+    List<ConnectorObject> results = new ArrayList<>();
+    ResultsHandler resultsHandler = ConnectorTestUtils.buildResultsHandler(idValues, nameValues, results);
+    connector.executeQuery(
+            ObjectClass.ACCOUNT, "query", resultsHandler, new OperationOptionsBuilder().build());
+    assertTrue(idValues.contains("someId"));
+    assertTrue(nameValues.contains("someName"));
+    assertEquals("someName", results.get(0).getAttributeByName("__NAME__").getValue().get(0));
+    assertEquals("someName", results.get(0).getAttributeByName("__NAME__").getValue().get(0));
   }
 
   static class TestConnector implements Connector, SearchOp<String> {
