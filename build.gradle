@@ -2,14 +2,18 @@ plugins {
     id 'java-library'
     id 'maven-publish'
     id 'com.google.cloud.artifactregistry.gradle-plugin' version '2.2.0'
-    id 'com.github.sherter.google-java-format' version '0.9'
+    id "com.diffplug.spotless" version "6.20.0" // formatting for Java 17
 }
 
 repositories {
     mavenCentral()
 }
 
-googleJavaFormat {}
+spotless {
+    java {
+        googleJavaFormat('1.17.0')
+    }
+}
 
 sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
