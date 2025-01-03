@@ -180,6 +180,28 @@ public abstract class ConnectorMockRestTest {
     }
   }
 
+  protected void prepareMockResponse(Map<String, String> uriToResponseMap) {
+    try {
+      Mockito.when(this.stubClient.execute(ArgumentMatchers.any(HttpRequestBase.class)))
+          .thenAnswer(invocation -> {
+              HttpRequestBase request = invocation.getArgument(0);
+              String uri = request.getURI().toString();
+              String responseData = uriToResponseMap.getOrDefault(uri, "");
+              
+              // Set up response for this specific URI
+              Mockito.when(this.stubResponseEntity.getContent())
+                  .thenReturn(new ByteArrayInputStream(responseData.getBytes()));
+              Mockito.when(this.stubResponse.getEntity()).thenReturn(this.stubResponseEntity);
+              Mockito.when(this.stubResponse.getStatusLine()).thenReturn(this.stubStatusLine);
+              Mockito.when(this.stubStatusLine.getStatusCode()).thenReturn(200);
+              
+              return this.stubResponse;
+          });
+    } catch (IOException ioe) {
+      handleFailure("IOException occurred during Mock rest execution for URI-specific response", ioe);
+    }
+  }
+
   private boolean checkResponseData(String... responseData) {
     if (responseData == null || responseData.length == 0) {
       Throwable error = new IllegalAccessException("Invalid Null or empty mock response supplied");
